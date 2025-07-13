@@ -1,0 +1,21 @@
+{
+	"name": "cactro-backend",
+	"type": "module",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"dev": "nodemon",
+		"start": "dotenvx run -- node ./src/index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"@dotenvx/dotenvx": "^1.47.5",
+		"dotenv": "^17.2.0",
+		"express": "^5.1.0",
+		"nodemon": "^3.1.10"
+	}
+}
