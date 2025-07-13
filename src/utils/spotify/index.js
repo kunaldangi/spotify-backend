@@ -1,3 +1,5 @@
+import { refreshSpotifyToken } from "../../api/spotify/index.js";
+
 async function fetchSpotifyApi(endpoint, method, token, body) {
    const res = await fetch(`https://api.spotify.com/${endpoint}`, {
       headers: {
@@ -6,6 +8,12 @@ async function fetchSpotifyApi(endpoint, method, token, body) {
       method,
       body: JSON.stringify(body)
    });
+
+   if (res.status === 401) {
+      token = await refreshSpotifyToken();
+      return fetchSpotifyApi(endpoint, method, token, body);
+   }
+
    return await res.json();
 };
 
@@ -25,7 +33,7 @@ export async function getDevices(token) {
    return data.devices;
 }
 
-export async function pauseCurrentlyPlayingSong(device_id, token){
+export async function pauseCurrentlyPlayingSong(device_id, token) {
    try {
       const res = await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${device_id}`, {
          headers: {
@@ -34,11 +42,16 @@ export async function pauseCurrentlyPlayingSong(device_id, token){
          method: 'PUT',
          body: JSON.stringify({})
       });
-   
-      if(res.status === 200) return { status: 'Song paused successfully' };
-      
+
+      if (res.status === 401) {
+         token = await refreshSpotifyToken();
+         return pauseCurrentlyPlayingSong(device_id, token);
+      }
+
+      if (res.status === 200) return { status: 'Song paused successfully' };
+
       let data = await res.json();
-      if(data?.error?.reason === 'PREMIUM_REQUIRED') return { status: 'Premium account required' };
+      if (data?.error?.reason === 'PREMIUM_REQUIRED') return { status: 'Premium account required' };
       else return { status: 'Failed to pause song' };
 
    } catch (error) {
@@ -56,6 +69,11 @@ export async function playTrack(trackUri, token) {
          },
          body: JSON.stringify({ uris: [trackUri] })
       });
+
+      if (res.status === 401) {
+         token = await refreshSpotifyToken();
+         return playTrack(trackUri, token);
+      }
 
       if (res.status === 204) return { status: 'Track is now playing' };
       else return { status: 'Failed to play track' };
